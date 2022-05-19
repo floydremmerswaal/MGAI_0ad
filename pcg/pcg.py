@@ -4,6 +4,7 @@ import random
 
 CAVARCHER = "units/pers/cavalry_archer_a"
 SPEARMAN = "units/brit/infantry_spearman_a"
+WALL = "structures/athen/wall_long"
 
 # the 'original' but by all means use different values if you want to
 
@@ -80,6 +81,15 @@ class PCG():
     def addSpearman(self, posx = TEAM2_X, posz = TEAM2_Z, orientation = ORIENTATION, team = 2):
         self.addBareEntity(SPEARMAN, team, posx, posz, orientation)
 
+    def addWall(self, posx = None, posz = None, orientation = ORIENTATION, team = 0):
+
+        if posx is None:
+            posx = (TEAM1_X + TEAM2_X) / 2
+        if posz is None:
+            posz = (TEAM1_Z + TEAM2_Z) / 2
+
+        self.addBareEntity(WALL, team, posx, posz, orientation)
+
     def printXML(self):
         print(str(self))
 
@@ -97,5 +107,6 @@ class PCG():
 
 # test.addCavalryArcher()
 # test.addSpearman()
+# test.addWall()
 
 # test.write("test.xml")
