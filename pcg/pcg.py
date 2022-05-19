@@ -84,9 +84,9 @@ class PCG():
     def addWall(self, posx = None, posz = None, orientation = ORIENTATION, team = 0):
 
         if posx is None:
-            posx = (TEAM1_X + TEAM2_X) / 2
+            posx = f"{((float(TEAM1_X) + float(TEAM2_X)) / 2):.5f}"
         if posz is None:
-            posz = (TEAM1_Z + TEAM2_Z) / 2
+            posz = f"{((float(TEAM1_Z) + float(TEAM2_Z)) / 2):.5f}"
 
         self.addBareEntity(WALL, team, posx, posz, orientation)
 
@@ -103,10 +103,10 @@ class PCG():
 
 
 
-# test = PCG()
+test = PCG()
 
-# test.addCavalryArcher()
-# test.addSpearman()
-# test.addWall()
+test.addCavalryArcher()
+test.addSpearman()
+test.addWall()
 
-# test.write("test.xml")
+test.write("test.xml")
