@@ -95,11 +95,11 @@ class PCG():
 
     def write(self, filename):
         try:
-            f = open(filename, "x")
+            f = open(filename, "w")
             f.write(str(self))
             f.close()
         except:
-            print("Error while writing, file probably already exists?")
+            print("Error while writing")
 
 
 
