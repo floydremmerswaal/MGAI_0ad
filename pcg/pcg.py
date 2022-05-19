@@ -24,7 +24,7 @@ class Entity():
         self.orientation = orientation
         self.id = id
 
-    def toXML(self):
+    def printXML(self):
         return(str(self))
 
     def __str__(self):
@@ -81,7 +81,7 @@ class PCG():
         self.addBareEntity(SPEARMAN, team, posx, posz, orientation)
 
     def printXML(self):
-        pass
+        print(str(self))
 
     def write(self, filename):
         try:
