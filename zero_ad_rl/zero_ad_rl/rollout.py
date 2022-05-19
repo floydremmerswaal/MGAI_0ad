@@ -1,7 +1,8 @@
 """
     This script wraps the rllib rollout command but uses the custom environment.
 """
-from ray.rllib.rollout import create_parser, run
+from ray.rllib.evaluate import create_parser
+from ray.rllib.rollout import run
 from ray.tune.registry import register_env
 from .env import register_envs
 
