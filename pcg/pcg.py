@@ -1,5 +1,8 @@
 import random
 
+import entities
+
+entities.units__pers__cavalry_archer_a
 # some constants
 
 CAVARCHER = "units/pers/cavalry_archer_a"
