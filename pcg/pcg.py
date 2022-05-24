@@ -2,12 +2,11 @@ import random
 
 import entities
 
-entities.units__pers__cavalry_archer_a
 # some constants
 
-CAVARCHER = "units/pers/cavalry_archer_a"
-SPEARMAN = "units/brit/infantry_spearman_a"
-WALL = "structures/athen/wall_long"
+CAVARCHER = entities.units__pers__cavalry_archer_a
+SPEARMAN = entities.units__han__infantry_spearman_a
+WALL = entities.structures__athen__wall_long
 
 # the 'original' but by all means use different values if you want to
 
@@ -52,8 +51,8 @@ class PCG():
     def __str__(self):
         result = ""
         try:
-            start = open("template_start.xml", "r")
-            end = open("template_end.xml", "r")
+            start = open("pcg/templates/template_start.xml", "r")
+            end = open("pcg/templates/template_end.xml", "r")
 
             for line in start:
                 result += f"{line}"
@@ -71,7 +70,7 @@ class PCG():
         return result
 
     def addBareEntity(self, entitytype, team, posx, posz, orientation):
-        n = len(self.entityList) + 11 # + 11 for some reason that is not apparent to me (crashes otherwise)
+        n = len(self.entityList) # + 11 # + 11 for some reason that is not apparent to me (crashes otherwise)
         new_entity = Entity(entitytype, team, posx, posz, orientation, n)
         self.addEntity(new_entity)
 
@@ -106,10 +105,10 @@ class PCG():
 
 
 
-test = PCG()
+# test = PCG()
 
-test.addCavalryArcher()
-test.addSpearman()
-test.addWall()
+# test.addCavalryArcher()
+# test.addSpearman()
+# test.addWall()
 
-test.write("test.xml")
+# test.write("test.xml")
