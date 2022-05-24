@@ -17,7 +17,7 @@ def cavalryVsInfantryF1():
     # builder.write("CavalryvsInfantryF1.xml")
 
 
-if __name__ == "main":
+if __name__ == '__main__':
     print("Building")
     cavalryVsInfantry()
     # cavalryVsInfantryF1()

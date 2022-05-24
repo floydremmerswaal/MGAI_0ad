@@ -70,7 +70,7 @@ class PCG():
         return result
 
     def addBareEntity(self, entitytype, team, posx, posz, orientation):
-        n = len(self.entityList) # + 11 # + 11 for some reason that is not apparent to me (crashes otherwise)
+        n = len(self.entityList) + 11 # + 11 for some reason that is not apparent to me (crashes otherwise)
         new_entity = Entity(entitytype, team, posx, posz, orientation, n)
         self.addEntity(new_entity)
 
