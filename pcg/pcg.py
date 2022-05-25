@@ -3,10 +3,11 @@ import random
 import entities
 
 # some constants
-
+#TODO : randomly choose entities and structures, some units are not working though
 CAVARCHER = entities.units__pers__cavalry_archer_a
-SPEARMAN = entities.units__han__infantry_spearman_a
+SPEARMAN = entities.units__pers__infantry_spearman_a
 WALL = entities.structures__athen__wall_long
+GATE = entities.structures__athen__wall_gate
 
 # the 'original' but by all means use different values if you want to
 
@@ -91,6 +92,19 @@ class PCG():
             posz = f"{((float(TEAM1_Z) + float(TEAM2_Z)) / 2):.5f}"
 
         self.addBareEntity(WALL, team, posx, posz, orientation)
+
+    def addSquareBoundary(self, posx1, posz1, posx2, posz2):
+        # orientations are pre-determined as there is no effective way to calculate them(yet).
+        self.addWall(posx1, posz1, "-2.41228")
+        self.addWall(posx2, posz1, "2.30707")
+        self.addWall(posx1, posz2, "2.35621")
+        self.addWall(posx2, posz2, "0.73993")
+    
+    def addSquareBoundaryWithGate(self, posx1, posz1, posx2, posz2, team = 0):
+        self.addWall(posx1, posz1, "-2.41228")
+        self.addWall(posx2, posz1, "2.30707")
+        self.addBareEntity(GATE, team, posx1, posz2, "2.35621")
+        self.addWall(posx2, posz2, "0.73993")
 
     def printXML(self):
         print(str(self))
