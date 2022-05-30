@@ -10,6 +10,9 @@ from .base import StateBuilder, ActionBuilder, ZeroADEnv
 import numpy as np
 import zero_ad
 from os import path
+import shapely.geometry as sg
+
+DISTANCE = 30
 
 def center(units):
     positions = np.array([unit.position() for unit in units])
@@ -18,6 +21,8 @@ def center(units):
 def enemy_offset(state):
     player_units = state.units(owner=1)
     enemy_units = state.units(owner=2)
+    print("center(enemy_units):", center(enemy_units))
+    print("center(player_units):", center(player_units))
     return center(enemy_units) - center(player_units)
 
 class EnemyDistance(StateBuilder):
@@ -36,7 +41,33 @@ class AttackRetreat(ActionBuilder):
         super().__init__(space)
 
     def to_json(self, action_index, state):
-        return self.retreat(state) if action_index == 0 else self.attack(state)
+        print("ACTION INDEX:", action_index)
+        if action_index == 0:
+            return self.retreat(state)
+        elif action_index == 1:
+            return self.attack(state)
+        elif action_index == 2:
+            return self.moveClockwise(state)
+        elif action_index == 3:
+            return self.moveAntiClockwise(state)
+
+    def moveClockwise(self, state):
+        units = state.units(owner=1)
+        center_pt = center(units)
+        center_pt_enemy = center(state.units(owner=2))
+        enemy_to_unit_line = sg.LineString([center_pt_enemy, center_pt])
+        right = enemy_to_unit_line.parallel_offset(DISTANCE, 'right')
+        new_pos = right.boundary[0]
+        return zero_ad.actions.walk(units, *new_pos)
+
+    def moveAntiClockwise(self, state):
+        units = state.units(owner=1)
+        center_pt = center(units)
+        center_pt_enemy = center(state.units(owner=2))
+        enemy_to_unit_line = sg.LineString([center_pt_enemy, center_pt])
+        right = enemy_to_unit_line.parallel_offset(DISTANCE, 'left')
+        new_pos = right.boundary[1]
+        return zero_ad.actions.walk(units, *new_pos)
 
     def retreat(self, state):
         units = state.units(owner=1)
