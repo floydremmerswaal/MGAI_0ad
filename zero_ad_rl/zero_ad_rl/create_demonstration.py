@@ -1,6 +1,8 @@
 from zero_ad import GameState
 import ray
 import gym
+
+from zero_ad_rl.zero_ad_rl.env.base import AvoidantReward, DefensiveReward
 from .agent import get_agent_class
 from ray.tune.registry import register_env, _global_registry, ENV_CREATOR
 from .env import register_envs
@@ -73,6 +75,7 @@ if __name__ == '__main__':
     parser.add_argument('--out', default='demonstrations')
     parser.add_argument('--target-env')
     parser.add_argument('--skip-count', default=8, type=int)
+    parser.add_argument('--reward')
 
     args = parser.parse_args()
 
@@ -80,7 +83,11 @@ if __name__ == '__main__':
     cls = get_agent_class(args.run)
     agent = cls(env=args.env)
     agent.restore(args.checkpoint)
-
+    if args.reward == 'defense':
+        agent.reward = DefensiveReward()
+    elif args.reward == 'avoid':
+        agent.reward - AvoidantReward()
+        
     # TODO: Refactor this...
     env = agent.workers.local_worker().env
     if args.target_env:

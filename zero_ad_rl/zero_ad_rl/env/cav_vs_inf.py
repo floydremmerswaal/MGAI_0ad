@@ -6,7 +6,7 @@ from PIL import Image
 import gym
 import math
 from gym.spaces import Discrete, Box
-from .base import StateBuilder, ActionBuilder, ZeroADEnv
+from .base import AvoidantReward, DefensiveReward, StateBuilder, ActionBuilder, ZeroADEnv
 import numpy as np
 import zero_ad
 from os import path
