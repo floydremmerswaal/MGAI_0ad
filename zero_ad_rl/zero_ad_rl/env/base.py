@@ -174,7 +174,10 @@ class ZeroADEnv(gym.Env):
     def step(self, action_index):
         action = self.actions.to_json(action_index, self.state)
         self.prev_state = self.state
-        self.state = self.game.step([action])
+        if isinstance(action,list):
+            self.state = self.game.step(action)
+        else:
+            self.state = self.game.step([action])
         for _ in range(self.step_count - 1):
             self.state = self.game.step()
 

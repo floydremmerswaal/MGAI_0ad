@@ -60,7 +60,7 @@ class IndividualDistance(StateBuilder):
         return individual_offset(state)
 
 class AttackRetreat(ActionBuilder):
-    def __init__(self, space=Discrete(2)):
+    def __init__(self, space=Discrete(5)):
         super().__init__(space)
 
     def to_json(self, action_index, state):
@@ -75,32 +75,111 @@ class AttackRetreat(ActionBuilder):
             return self.moveAntiClockwise(state)
         elif action_index == 4:
             return self.attack_lowest(state)
+        #else:
+        #    return self.move(state, 2 * math.pi * action_index/8)
 
-    def moveClockwise(self, state):
+    def move(self, state, angle, distance=15):
         units = state.units(owner=1)
         center_pt = center(units)
-        center_pt_enemy = center(state.units(owner=2))
+
+        offset = distance * np.array([math.cos(angle), math.sin(angle)])
+        position = list(center_pt + offset)
+
+        return zero_ad.actions.walk(units, *position)
+
+    def moveClockwise(self, state):
+        actions = []
+        units = state.units(owner=1)
+        for unit in units:
+            center_pt = center([unit])
+            center_pt_enemy = center(state.units(owner=2))
+            enemy_to_unit_line = sg.LineString([center_pt_enemy, center_pt])
+            right = enemy_to_unit_line.parallel_offset(DISTANCE, 'right')
+            new_pos = right.boundary[0]
+
+            actions.append(zero_ad.actions.walk([unit], *new_pos))
+        return actions
+        '''
+        units1 = units[:len(units)//2]
+        units2 = units[len(units)//2:]
+
+        center_pt = center(units1)
+        center_pt_enemy = center(state.units1(owner=2))
         enemy_to_unit_line = sg.LineString([center_pt_enemy, center_pt])
         right = enemy_to_unit_line.parallel_offset(DISTANCE, 'right')
         new_pos = right.boundary[0]
-        return zero_ad.actions.walk(units, *new_pos)
+
+        actions.append(zero_ad.actions.walk(units1, *new_pos))
+
+        center_pt = center(units2)
+        center_pt_enemy = center(state.units2(owner=2))
+        enemy_to_unit_line = sg.LineString([center_pt_enemy, center_pt])
+        right = enemy_to_unit_line.parallel_offset(DISTANCE, 'right')
+        new_pos = right.boundary[0]
+        
+        actions.append(zero_ad.actions.walk(units2, *new_pos))
+        return actions
+        '''
 
     def moveAntiClockwise(self, state):
+        actions = []
         units = state.units(owner=1)
-        center_pt = center(units)
-        center_pt_enemy = center(state.units(owner=2))
+        for unit in units:
+            center_pt = center([unit])
+            center_pt_enemy = center(state.units(owner=2))
+            enemy_to_unit_line = sg.LineString([center_pt_enemy, center_pt])
+            right = enemy_to_unit_line.parallel_offset(DISTANCE, 'left')
+            new_pos = right.boundary[1]
+            actions.append(zero_ad.actions.walk([unit], *new_pos))
+        return actions
+        '''
+        units1 = units[:len(units)//2]
+        units2 = units[len(units)//2:]
+
+        center_pt = center(units1)
+        center_pt_enemy = center(state.units1(owner=2))
         enemy_to_unit_line = sg.LineString([center_pt_enemy, center_pt])
         right = enemy_to_unit_line.parallel_offset(DISTANCE, 'left')
         new_pos = right.boundary[1]
-        return zero_ad.actions.walk(units, *new_pos)
+        actions.append(zero_ad.actions.walk(units1, *new_pos))
 
+        center_pt = center(units2)
+        center_pt_enemy = center(state.units2(owner=2))
+        enemy_to_unit_line = sg.LineString([center_pt_enemy, center_pt])
+        right = enemy_to_unit_line.parallel_offset(DISTANCE, 'left')
+        new_pos = right.boundary[1]
+        actions.append(zero_ad.actions.walk(units2, *new_pos))
+
+        return actions
+        '''
     def retreat(self, state):
+        actions = []
         units = state.units(owner=1)
-        center_pt = center(units)
+        for unit in units:
+            center_pt = center([unit])
+            offset = enemy_offset(state)
+            rel_position = 20 * (offset / np.linalg.norm(offset, ord=2))
+            position = list(center_pt - rel_position)
+            actions.append(zero_ad.actions.walk([unit], *position))
+        return actions
+        '''
+        units1 = units[:len(units)//2]
+        units2 = units[len(units)//2:]
+
+        center_pt = center(units1)
         offset = enemy_offset(state)
         rel_position = 20 * (offset / np.linalg.norm(offset, ord=2))
         position = list(center_pt - rel_position)
-        return zero_ad.actions.walk(units, *position)
+        actions.append(zero_ad.actions.walk(units1, *position))
+
+        center_pt = center(units2)
+        offset = enemy_offset(state)
+        rel_position = 20 * (offset / np.linalg.norm(offset, ord=2))
+        position = list(center_pt - rel_position)
+        actions.append(zero_ad.actions.walk(units2, *position))
+
+        return actions
+        '''
 
     def attack(self, state):
         units = state.units(owner=1)
