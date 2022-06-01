@@ -96,8 +96,7 @@ class AttackRetreat(ActionBuilder):
             enemy_to_unit_line = sg.LineString([center_pt_enemy, center_pt])
             right = enemy_to_unit_line.parallel_offset(DISTANCE, 'right')
             new_pos = right.boundary[0]
-
-            actions.append(zero_ad.actions.walk([unit], *new_pos))
+            actions.append(zero_ad.actions.walk([unit], *np.array(new_pos)))
         return actions
         '''
         units1 = units[:len(units)//2]
@@ -130,7 +129,7 @@ class AttackRetreat(ActionBuilder):
             enemy_to_unit_line = sg.LineString([center_pt_enemy, center_pt])
             right = enemy_to_unit_line.parallel_offset(DISTANCE, 'left')
             new_pos = right.boundary[1]
-            actions.append(zero_ad.actions.walk([unit], *new_pos))
+            actions.append(zero_ad.actions.walk([unit], *np.array(new_pos)))
         return actions
         '''
         units1 = units[:len(units)//2]
