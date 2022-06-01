@@ -74,7 +74,7 @@ class HealthDeathReward(RewardBuilder):
             reward += c1 * ((prev_enemy_health-cur_enemy_health)/prev_enemy_health)
             
             # Each percentage of missing ally health decreases the reward by c2 * percentage
-            c2 = .1
+            c2 = .3
             prev_ally_health = 0
             for ally in prev_state.units(1):
                 prev_ally_health += ally.health()
@@ -144,7 +144,7 @@ class AvoidantReward(RewardBuilder):
             return reward
 
 class ZeroADEnv(gym.Env):
-    def __init__(self, action_builder, state_builder, reward_builder=DefensiveReward(), step_count=8):
+    def __init__(self, action_builder, state_builder, reward_builder=HealthDeathReward(), step_count=8):
         self.actions = action_builder
         self.states = state_builder
         self.reward = reward_builder
@@ -158,7 +158,7 @@ class ZeroADEnv(gym.Env):
 
     @property
     def address(self):
-        return 'http://127.0.0.1:6004'
+        return 'http://127.0.0.1:6000'
 
     @property
     def scenario_config(self):
@@ -166,6 +166,7 @@ class ZeroADEnv(gym.Env):
 
     def reset(self):
         self.prev_state = self.game.reset(self.scenario_config)
+        
         self.reward.reset(self.prev_state)
         self.state = self.game.step([zero_ad.actions.reveal_map()])
         return self.observation(self.state)

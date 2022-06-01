@@ -25,6 +25,21 @@ def enemy_offset(state):
     print("center(player_units):", center(player_units))
     return center(enemy_units) - center(player_units)
 
+def individual_offset(state):
+    player_units = state.units(owner=1)
+    enemy_units = state.units(owner=2)
+
+    offsets = np.zeros(shape=(5,7))
+    for i, player in enumerate(player_units):
+        ind_offsets = np.zeros(shape=7)
+        for j, enemy in enumerate(enemy_units):
+            dist = np.linalg.norm(np.asarray(enemy.position()) - np.asarray(player.position()))
+            max_dist = 80
+            normalized_dist = dist/max_dist if not np.isnan(dist/max_dist) else 1.
+            ind_offsets[j] = min(normalized_dist, 1.)
+        offsets[i] = ind_offsets
+    return offsets
+
 class EnemyDistance(StateBuilder):
     def __init__(self):
         space = Box(0.0, 1.0, shape=(1, ), dtype=np.float32)
@@ -35,6 +50,14 @@ class EnemyDistance(StateBuilder):
         max_dist = 80
         normalized_dist = dist/max_dist if not np.isnan(dist/max_dist) else 1.
         return np.array([min(normalized_dist, 1.)])
+
+class IndividualDistance(StateBuilder):
+    def __init__(self):
+        space = Box(0.0, 1.0, shape=(5, 7), dtype=np.float32)
+        super().__init__(space)
+
+    def from_json(self, state):
+        return individual_offset(state)
 
 class AttackRetreat(ActionBuilder):
     def __init__(self, space=Discrete(2)):
@@ -50,6 +73,8 @@ class AttackRetreat(ActionBuilder):
             return self.moveClockwise(state)
         elif action_index == 3:
             return self.moveAntiClockwise(state)
+        elif action_index == 4:
+            return self.attack_lowest(state)
 
     def moveClockwise(self, state):
         units = state.units(owner=1)
@@ -89,10 +114,21 @@ class AttackRetreat(ActionBuilder):
 
         return zero_ad.actions.attack(units, closest_enemy)
 
+    def attack_lowest(self, state):
+        units = state.units(owner=1)
+
+        enemy_units = state.units(owner=2)
+        enemy_health = np.array([unit.health() for unit in enemy_units])
+        closest_index = np.argmin(enemy_health)
+        closest_enemy = enemy_units[closest_index]
+
+        return zero_ad.actions.attack(units, closest_enemy)
+
 class CavalryVsInfantryEnv(ZeroADEnv):
     def __init__(self, config):
-        super().__init__(AttackRetreat(), EnemyDistance())
-
+        #super().__init__(AttackRetreat(), EnemyDistance())
+        #super().__init__(AttackRetreat(), IndividualDistance())
+        super().__init__(AttackRetreat(), IndividualDistance())
     def scenario_config_file(self):
         return 'CavalryVsInfantry.json'
 
