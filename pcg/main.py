@@ -82,7 +82,7 @@ def generateRandomPoints(low_bound, high_bound):
     rand_offset_y = random.sample(range(int(low_bound[1]), int(high_bound), 10), 10)
     return list(zip(rand_offset_x, rand_offset_y))
 
-def build_wall(from_coord, to_coord, builder: PCG):
+def build_wall(from_coord, to_coord, center_point, builder: PCG):
         SEGMENT_LENGTH = 25.6
         direction = numpy.subtract(to_coord, from_coord)
         distance = numpy.linalg.norm(direction)
@@ -93,7 +93,11 @@ def build_wall(from_coord, to_coord, builder: PCG):
         
         for i in range(n_segments):
             offset = direction * (i / float(n_segments))
-            builder.addWall(posx=from_coord[0] + offset[0], posz=from_coord[1] + offset[1], orientation=rads)
+            posx = from_coord[0] + offset[0]
+            posy = from_coord[1] + offset[1]
+            if numpy.linalg.norm([posx, posy] - numpy.array(center_point)) > int(2048 / 2) - 100:
+                continue
+            builder.addWall(posx=posx, posz=posy, orientation=rads)
             
             
 def cavalryVsInfantryDistrict():
@@ -176,29 +180,37 @@ def cavalryVsInfantryDistrict():
     # draw a line between all the vertices
     for (n1,n2), (ridge_from, ridge_to) in vor.ridge_dict.items():
         if ridge_from == -1:
+        # or (ridge_from in out_of_bounds) or (ridge_to in out_of_bounds):
             # Do more complicated computation
             n1_world = vor.points[n1]
             n2_world = vor.points[n2]
+            
             ridge_point = vor.vertices[ridge_to]
+
             avg_point = (n1_world + n2_world) / 2
             avg_direction = avg_point - ridge_point
             
-            direction_to_center = numpy.array(center_coords) - ridge_point
-            if numpy.dot(direction_to_center, avg_direction) > 0:
+            # Rotate the direction in case it is pointing the center 
+            # (we expect infinite points to go outwards)
+            avg_center =numpy.average(vor.points, axis=0)
+            direction_to_center = avg_center - ridge_point
+            if numpy.dot(direction_to_center, avg_direction) > 0.0:
                 avg_direction = -avg_direction
+
+            # calculate the mean of all of the points in points
             
             wall_end_point = avg_point
             while numpy.linalg.norm(wall_end_point - numpy.array(center_coords)) < outer_radius:
                 wall_end_point += (avg_direction / 100)
             to_point = wall_end_point
-            build_wall(ridge_point, to_point, builder)
+            build_wall(ridge_point, to_point, center_coords, builder)
             continue
         
         # get points for ridge vertices
         from_point = vor.vertices[ridge_from]
         to_point = vor.vertices[ridge_to]
 
-        build_wall(from_point, to_point, builder)
+        build_wall(from_point, to_point, center_coords, builder)
     
     # maze = Maze(maze_height, maze_width)
     # maze.generate()
