@@ -2,6 +2,7 @@
     This script wraps the default rllib train script and registers the CavalryVsInfantry scenario.
 """
 
+from typing_extensions import Required
 from ray.rllib import train
 from ray.tune.registry import register_env
 from .env import register_envs
@@ -32,6 +33,7 @@ def run(args, parser):
          config['callbacks']['on_train_result'] = on_train_result
     else:
         print('on_train_result defined. Overriding default')
+
     train.run(args, parser)
 
 def create_parser():
@@ -41,5 +43,7 @@ def create_parser():
 
 if __name__ == '__main__':
     parser = create_parser()
+    parser.add_argument('--reward', help='Which reward function to use. Options: \"avoid\", \"defense\", and \"health\".', required=False)
     args = parser.parse_args()
+    
     run(args, parser)
