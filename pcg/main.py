@@ -16,7 +16,7 @@ def pointsInCircum(r,n=100):
 def build_short_wall(builder: PCG, coord, orientation):
     builder.addBareEntity(entitytype=entities.skirmish__structures__default_wall_short, team=0, posx=coord[0], posz=coord[1], orientation=orientation)
 
-def generateCircle(builder: PCG, radius, center_coords):
+def generate_circle(builder: PCG, radius, center_coords):
     # compute circumference of circle with radius
     circum = 2 * math.pi * radius
     n_segments = math.ceil(circum / SEGMENT_LENGTH)
@@ -29,7 +29,7 @@ def generateCircle(builder: PCG, radius, center_coords):
         
         build_short_wall(builder, p, rads)
         
-def generateWatchTowers(builder:PCG, radius, center_coords):
+def generate_watch_towers_circle(builder:PCG, radius, center_coords):
     # compute circumference of circle with radius
     circum = 2 * math.pi * radius
     segment_spread = 200
@@ -45,11 +45,6 @@ def generateWatchTowers(builder:PCG, radius, center_coords):
 
 def build_watch_tower(builder:PCG, coord, orientation):
     builder.addBareEntity(entitytype=entities.skirmish__structures__default_wall_tower, team=0, posx=coord[0], posz=coord[1], orientation=orientation)
-
-def generateRandomPoints(low_bound, high_bound):
-    rand_offset_x = random.sample(range(int(low_bound[0]), int(high_bound), 10), 10)
-    rand_offset_y = random.sample(range(int(low_bound[1]), int(high_bound), 10), 10)
-    return list(zip(rand_offset_x, rand_offset_y))
 
 def build_wall(from_coord, to_coord, center_point, builder: PCG, min_dist, max_dist):
         
@@ -85,7 +80,6 @@ def build_wall(from_coord, to_coord, center_point, builder: PCG, min_dist, max_d
                 break
             build_short_wall(builder, pos, rads)        
             
-            
 def cavalryVsInfantryDistrict():
     builder = PCG()
     map_height = 2048
@@ -97,9 +91,9 @@ def cavalryVsInfantryDistrict():
     inner_radius = int(outer_radius / 3)
     center_coords = np.array([map_height / 2, map_width / 2])
 
-    generateCircle(builder, inner_radius, center_coords)
-    generateCircle(builder, outer_radius, center_coords)
-    generateWatchTowers(builder, outer_radius, center_coords)
+    generate_circle(builder, inner_radius, center_coords)
+    generate_circle(builder, outer_radius, center_coords)
+    generate_watch_towers_circle(builder, outer_radius, center_coords)
 
     no_districts = 10
     district_centers = generate_districts(builder, outer_radius, inner_radius, center_coords, no_districts)
@@ -113,6 +107,7 @@ def cavalryVsInfantryDistrict():
     builder.write("CavalryVsInfantryDistricts.xml")
     with open("C:/Users/Savaa/Documents/My Games/0ad/mods/user/maps/scenarios/CavalryVsInfantryDistricts.xml", 'w') as f:
         f.write(str(builder))
+
 
 def generate_district_boundaries(builder, outer_radius, inner_radius, center_coords, district_centers):
     vor = Voronoi(district_centers)
