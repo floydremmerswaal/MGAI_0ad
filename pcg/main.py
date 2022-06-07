@@ -1,5 +1,7 @@
+from city import City
 from pcg import PCG
-from maze import Maze, init # remove init() when done debugging
+from maze import Maze
+import numpy as np
 
 # separated by wall
 def cavalryVsInfantry():
@@ -97,8 +99,36 @@ def cavalryVsInfantryMaze(maze_height, maze_width):
 
     builder.write("CavalryVsInfantryMaze.xml")
 
+def cavalryVsInfantryDistrict():
+    builder = PCG()
+    city_generator = City()
+    map_height = 2048
+    map_width =  2048
+    
+    outer_radius = int(map_height / 2) - 100
+    inner_radius = int(outer_radius / 3)
+    center_coords = np.array([map_height / 2, map_width / 2])
+
+    city_generator.generate_circle(builder, inner_radius, center_coords)
+    city_generator.generate_circle(builder, outer_radius, center_coords)
+    city_generator.generate_watch_towers_circle(builder, outer_radius, center_coords)
+
+    no_districts = 10
+    district_centers = city_generator.generate_districts(builder, outer_radius, inner_radius, center_coords, no_districts)
+
+    city_generator.generate_district_boundaries(builder, outer_radius, inner_radius, center_coords, district_centers)
+    
+    district_centers2 = city_generator.generate_districts(builder, inner_radius, 0, center_coords, no_districts=1, no_highways=10)
+
+    city_generator.generate_district_boundaries(builder, inner_radius, 0, center_coords, district_centers2)
+    
+    builder.write("CavalryVsInfantryDistricts.xml")
 
 if __name__ == '__main__':
-    print("Building")
+    print("Building scenarios...")
+    cavalryVsInfantry()
+    cavalryVsInfantryF1()
+    cavalryVsInfantryF2()
     cavalryVsInfantryMaze(maze_height=6, maze_width=7)
+    cavalryVsInfantryDistrict()
     print("Done.")
