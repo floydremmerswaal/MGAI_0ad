@@ -1,7 +1,10 @@
-import numpy as np
-from pcg import PCG, entities
-import math
-from scipy.spatial import Voronoi, voronoi_plot_2d
+import numpy as np	
+from pyrsistent import v	
+from scipy import rand	
+from pcg import PCG, entities	
+import math	
+import random	
+from scipy.spatial import Voronoi, voronoi_plot_2d	
 import matplotlib.pyplot as plt
 
 pi = math.pi
@@ -10,8 +13,8 @@ class City:
     def __init__(self) -> None:
         self.SEGMENT_LENGTH = 12.3
 
-    def pointsInCircum(self, r, n=100):
-        return [(math.cos(2*pi/n*x)*r,math.sin(2*pi/n*x)*r) for x in range(0,n+1)]
+    def pointsInCircum(self, r,n=100):
+        return [(math.cos(2*np.pi/n*x)*r,math.sin(2*np.pi/n*x)*r) for x in range(0,n+1)]
 
     def build_short_wall(self, builder: PCG, coord, orientation):
         builder.addBareEntity(entitytype=entities.skirmish__structures__default_wall_short, team=0, posx=coord[0], posz=coord[1], orientation=orientation)
@@ -25,10 +28,10 @@ class City:
         for point in points:
             p = point + center_coords
             direction = np.subtract(p, center_coords)
-        rads = math.atan2(direction[0], direction[1])
-        
-        self.build_short_wall(builder, p, rads)
-
+            rads = math.atan2(direction[0], direction[1])
+            
+            self.build_short_wall(builder, p, rads)
+            
     def generate_watch_towers_circle(self, builder:PCG, radius, center_coords):
         # compute circumference of circle with radius
         circum = 2 * math.pi * radius
