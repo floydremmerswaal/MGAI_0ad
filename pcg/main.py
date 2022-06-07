@@ -104,6 +104,17 @@ def cavalryVsInfantryDistrict():
     no_districts = 10
     district_centers = generate_districts(builder, outer_radius, inner_radius, center_coords, no_districts)
 
+    generate_district_boundaries(builder, outer_radius, inner_radius, center_coords, district_centers)
+    
+    district_centers2 = generate_districts(builder, inner_radius, 0, center_coords, no_districts=1, no_highways=10)
+
+    generate_district_boundaries(builder, inner_radius, 0, center_coords, district_centers2)
+    
+    builder.write("CavalryVsInfantryDistricts.xml")
+    with open("C:/Users/Savaa/Documents/My Games/0ad/mods/user/maps/scenarios/CavalryVsInfantryDistricts.xml", 'w') as f:
+        f.write(str(builder))
+
+def generate_district_boundaries(builder, outer_radius, inner_radius, center_coords, district_centers):
     vor = Voronoi(district_centers)
     fig = voronoi_plot_2d(vor)
     plt.savefig("voronoi.png")
@@ -142,10 +153,6 @@ def cavalryVsInfantryDistrict():
         to_point = vor.vertices[ridge_to]
 
         build_wall(from_point, to_point, center_coords, builder, inner_radius, outer_radius)
-    
-    builder.write("CavalryVsInfantryDistricts.xml")
-    with open("C:/Users/Savaa/Documents/My Games/0ad/mods/user/maps/scenarios/CavalryVsInfantryDistricts.xml", 'w') as f:
-        f.write(str(builder))
 
 def generate_districts(builder, outer_radius, inner_radius, center_coords, no_districts, no_highways=3):
     district_centers = []
