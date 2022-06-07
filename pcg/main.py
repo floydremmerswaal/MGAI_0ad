@@ -33,7 +33,7 @@ def cavalryVsInfantryF1():
     builder.addSpearman(float(x2)-4, float(z2)-7, team2_orientation, 1)
     builder.addSpearman(float(x2)-5, float(z2)-9, team2_orientation, 1)
 
-    builder.write("CavalryVsSpearmanWalls.xml")
+    builder.write("CavalryVsInfantryF1.xml")
 
 # surrounded by a fort with a gate
 def cavalryVsInfantryF2():
@@ -56,13 +56,11 @@ def cavalryVsInfantryF2():
     builder.addSpearman(float(x2)-4, float(z2)-7, team2_orientation, 1)
     builder.addSpearman(float(x2)-5, float(z2)-9, team2_orientation, 1)
 
-    builder.write("CavalryVsSpearmanFort.xml")
+    builder.write("CavalryVsInfantryF2.xml")
 
 
 def cavalryVsInfantryMaze(maze_height, maze_width):
     builder = PCG()
-    x = 483.3144
-    z = 116.94448
 
     WALL_LENGTH = 30
 
@@ -71,10 +69,14 @@ def cavalryVsInfantryMaze(maze_height, maze_width):
 
     WALL_ORIENTATION_UP_DOWN = radians(WALL_ORIENTATION_UP_DOWN_DEG) # useless but could be usefull later
     WALL_ORIENTATION_LEFT_RIGHT = radians(WALL_ORIENTATION_LEFT_RIGHT_DEG)
+
+    # center in map
+    x = (1024 / 2) - ((maze_height / 2) * WALL_LENGTH)
+    z = (1024 / 2) - ((maze_width / 2) * WALL_LENGTH)
     
     maze = Maze(maze_height, maze_width)
     maze.generate()
-    maze.print_maze()
+    # maze.print_maze()
 
     flag = False
 
@@ -89,11 +91,11 @@ def cavalryVsInfantryMaze(maze_height, maze_width):
                     builder.addWall(((x + (h*WALL_LENGTH)) + WALL_LENGTH / 2), (z + (w*WALL_LENGTH)), orientation=WALL_ORIENTATION_LEFT_RIGHT)
                 if maze.maze[h - 1][w] == maze.wall:
                     builder.addWall(((x + (h*WALL_LENGTH)) - WALL_LENGTH / 2), (z + (w*WALL_LENGTH)), orientation=WALL_ORIENTATION_LEFT_RIGHT)
+
             if maze.maze[h][w] == maze.exit:
                 builder.addWall((x + (h*WALL_LENGTH)), ((z + (w*WALL_LENGTH)) - WALL_LENGTH / 2), orientation=WALL_ORIENTATION_UP_DOWN)
                 builder.addWall((x + (h*WALL_LENGTH)), ((z + (w*WALL_LENGTH)) + WALL_LENGTH / 2), orientation=WALL_ORIENTATION_UP_DOWN)
 
-                
                 if not flag:
                     builder.addCavalryArcher((x + (h*WALL_LENGTH)), (z + (w*WALL_LENGTH)) + 3, orientation=WALL_ORIENTATION_LEFT_RIGHT)
                     builder.addCavalryArcher((x + (h*WALL_LENGTH)), (z + (w*WALL_LENGTH)) + 1, orientation=WALL_ORIENTATION_LEFT_RIGHT)
@@ -149,9 +151,10 @@ def cavalryVsInfantryDistrict():
 
 if __name__ == '__main__':
     print("Building scenarios...")
-    cavalryVsInfantry()
-    cavalryVsInfantryF1()
-    cavalryVsInfantryF2()
+    init()
+    # cavalryVsInfantry()
+    # cavalryVsInfantryF1()
+    # cavalryVsInfantryF2()
     cavalryVsInfantryMaze(maze_height=10, maze_width=12)
-    cavalryVsInfantryDistrict()
+    # cavalryVsInfantryDistrict()
     print("Done.")
