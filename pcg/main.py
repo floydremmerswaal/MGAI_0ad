@@ -52,13 +52,18 @@ def generateRandomPoints(low_bound, high_bound):
     return list(zip(rand_offset_x, rand_offset_y))
 
 def build_wall(from_coord, to_coord, center_point, builder: PCG, min_dist, max_dist):
-        direction = np.subtract(to_coord, from_coord)
-        distance = np.linalg.norm(direction)
-        n_segments = math.ceil(distance / SEGMENT_LENGTH)
         
         d1 = np.linalg.norm(np.subtract(from_coord, center_point))
         d2 = np.linalg.norm(np.subtract(to_coord, center_point))
-        
+        if d1 > d2:
+            # swap variables
+            t = from_coord.copy()
+            from_coord = to_coord.copy()
+            to_coord = t
+            
+        direction = np.subtract(to_coord, from_coord)
+        distance = np.linalg.norm(direction)
+        n_segments = math.ceil(distance / SEGMENT_LENGTH)
         
         # buildWatchTower(builder, to_coord, math.atan2(direction[0], direction[1]))
         far_tower = False
@@ -70,10 +75,15 @@ def build_wall(from_coord, to_coord, center_point, builder: PCG, min_dist, max_d
             offset = direction * (i / float(n_segments))
             pos = from_coord + offset
 
-            distance = np.linalg.norm(pos - np.array(center_point))
-            if distance > max_dist or distance < min_dist:
+            distance = np.linalg.norm(pos - center_point)
+            if distance > min_dist and not close_tower and distance < max_dist:
+                close_tower = True
+                build_watch_tower(builder, pos, rads)
+            if distance < min_dist:
                 continue
-            build_short_wall(builder, pos, rads)
+            if distance > max_dist:
+                break
+            build_short_wall(builder, pos, rads)        
             
             
 def cavalryVsInfantryDistrict():
