@@ -1,5 +1,6 @@
 from pcg import PCG
 from maze import Maze, init # remove init() when done debugging
+from math import radians
 
 # separated by wall
 def cavalryVsInfantry():
@@ -55,50 +56,73 @@ def cavalryVsInfantryF2():
 
     builder.write("CavalryVsSpearmanFort.xml")
 
+
 def cavalryVsInfantryMaze(maze_height, maze_width):
     builder = PCG()
     x = 483.3144
     z = 116.94448
 
-    WALL_LENGTH = 25.6
-    ORIENTATION_1 = 1.597
-    ORIENTATION_2 = 4.65592
+    WALL_LENGTH = 30
+
+    WALL_ORIENTATION_UP_DOWN_DEG = 0 # useless but could be usefull later
+    WALL_ORIENTATION_LEFT_RIGHT_DEG = 90
+
+    WALL_ORIENTATION_UP_DOWN = radians(WALL_ORIENTATION_UP_DOWN_DEG) # useless but could be usefull later
+    WALL_ORIENTATION_LEFT_RIGHT = radians(WALL_ORIENTATION_LEFT_RIGHT_DEG)
     
     maze = Maze(maze_height, maze_width)
     maze.generate()
-    # maze.print_maze()
+    maze.print_maze()
 
     flag = False
 
-    for i in range(maze_height):
-        for j in range(maze_width):
-            if maze.maze[i][j] == maze.wall:
-                builder.addWall((x + (i*WALL_LENGTH)), ((z + (j*WALL_LENGTH)) - WALL_LENGTH / 2), orientation=0)
-                builder.addWall(((x + (i*WALL_LENGTH)) - WALL_LENGTH / 2), (z + (j*WALL_LENGTH)), orientation=ORIENTATION_1)
-                builder.addWall((x + (i*WALL_LENGTH)), ((z + (j*WALL_LENGTH)) + WALL_LENGTH / 2), orientation=0)
-                builder.addWall(((x + (i*WALL_LENGTH)) + WALL_LENGTH / 2), (z + (j*WALL_LENGTH)), orientation=ORIENTATION_1)
-            if maze.maze[i][j] == maze.exit:
+    for h in range(maze_height):
+        for w in range(maze_width):
+            if maze.maze[h][w] == maze.cell:
+                if maze.maze[h][w + 1] == maze.wall:
+                    builder.addWall((x + (h*WALL_LENGTH)), ((z + (w*WALL_LENGTH)) + WALL_LENGTH / 2), orientation=WALL_ORIENTATION_UP_DOWN)
+                if maze.maze[h][w - 1] == maze.wall:
+                    builder.addWall((x + (h*WALL_LENGTH)), ((z + (w*WALL_LENGTH)) - WALL_LENGTH / 2), orientation=WALL_ORIENTATION_UP_DOWN)
+                if maze.maze[h + 1][w] == maze.wall:
+                    builder.addWall(((x + (h*WALL_LENGTH)) + WALL_LENGTH / 2), (z + (w*WALL_LENGTH)), orientation=WALL_ORIENTATION_LEFT_RIGHT)
+                if maze.maze[h - 1][w] == maze.wall:
+                    builder.addWall(((x + (h*WALL_LENGTH)) - WALL_LENGTH / 2), (z + (w*WALL_LENGTH)), orientation=WALL_ORIENTATION_LEFT_RIGHT)
+            if maze.maze[h][w] == maze.exit:
+                builder.addWall((x + (h*WALL_LENGTH)), ((z + (w*WALL_LENGTH)) - WALL_LENGTH / 2), orientation=WALL_ORIENTATION_UP_DOWN)
+                builder.addWall((x + (h*WALL_LENGTH)), ((z + (w*WALL_LENGTH)) + WALL_LENGTH / 2), orientation=WALL_ORIENTATION_UP_DOWN)
+
+                
                 if not flag:
-                    builder.addCavalryArcher((x + (i*WALL_LENGTH)), (z + (j*WALL_LENGTH)) + 3, orientation=ORIENTATION_1)
-                    builder.addCavalryArcher((x + (i*WALL_LENGTH)), (z + (j*WALL_LENGTH)) + 1, orientation=ORIENTATION_1)
-                    builder.addCavalryArcher((x + (i*WALL_LENGTH)), (z + (j*WALL_LENGTH)) - 1, orientation=ORIENTATION_1)
-                    builder.addCavalryArcher((x + (i*WALL_LENGTH)), (z + (j*WALL_LENGTH)) - 3, orientation=ORIENTATION_1)
+                    builder.addCavalryArcher((x + (h*WALL_LENGTH)), (z + (w*WALL_LENGTH)) + 3, orientation=WALL_ORIENTATION_LEFT_RIGHT)
+                    builder.addCavalryArcher((x + (h*WALL_LENGTH)), (z + (w*WALL_LENGTH)) + 1, orientation=WALL_ORIENTATION_LEFT_RIGHT)
+                    builder.addCavalryArcher((x + (h*WALL_LENGTH)), (z + (w*WALL_LENGTH)) - 1, orientation=WALL_ORIENTATION_LEFT_RIGHT)
+                    builder.addCavalryArcher((x + (h*WALL_LENGTH)), (z + (w*WALL_LENGTH)) - 3, orientation=WALL_ORIENTATION_LEFT_RIGHT)
                     flag = True
                 else:
-                    builder.addSpearman((x + (i*WALL_LENGTH)), (z + (j*WALL_LENGTH)) + 3, orientation=ORIENTATION_2)
-                    builder.addSpearman((x + (i*WALL_LENGTH)), (z + (j*WALL_LENGTH)) + 1, orientation=ORIENTATION_2)
-                    builder.addSpearman((x + (i*WALL_LENGTH)), (z + (j*WALL_LENGTH)) - 1, orientation=ORIENTATION_2)
-                    builder.addSpearman((x + (i*WALL_LENGTH)), (z + (j*WALL_LENGTH)) - 3, orientation=ORIENTATION_2)
-    
-    # reinforce exterior wall so troops stay in maze
-    for j in range(maze_width):
-        builder.addWall((x - (WALL_LENGTH / 2 + 5)), (z + (j*WALL_LENGTH)), orientation=ORIENTATION_1)
-        builder.addWall(((x + (maze_height - 1) * WALL_LENGTH) + (WALL_LENGTH / 2 + 5)), (z + (j*WALL_LENGTH)), orientation=ORIENTATION_1)
+                    builder.addSpearman((x + (h*WALL_LENGTH)), (z + (w*WALL_LENGTH)) + 3, orientation=-WALL_ORIENTATION_LEFT_RIGHT)
+                    builder.addSpearman((x + (h*WALL_LENGTH)), (z + (w*WALL_LENGTH)) + 1, orientation=-WALL_ORIENTATION_LEFT_RIGHT)
+                    builder.addSpearman((x + (h*WALL_LENGTH)), (z + (w*WALL_LENGTH)) - 1, orientation=-WALL_ORIENTATION_LEFT_RIGHT)
+                    builder.addSpearman((x + (h*WALL_LENGTH)), (z + (w*WALL_LENGTH)) - 3, orientation=-WALL_ORIENTATION_LEFT_RIGHT)
+
+
+    builder.addTower((x - (WALL_LENGTH / 2 + 5)), (z - (WALL_LENGTH / 2 + 5)), orientation=WALL_ORIENTATION_LEFT_RIGHT)
+    builder.addTower(((x + (maze_height - 1)*WALL_LENGTH) + (WALL_LENGTH / 2 + 5)), (z - (WALL_LENGTH / 2 + 5)), orientation=WALL_ORIENTATION_LEFT_RIGHT)
+    builder.addTower((x - (WALL_LENGTH / 2 + 5)), ((z + (maze_width - 1)*WALL_LENGTH) + (WALL_LENGTH / 2 + 5)), orientation=WALL_ORIENTATION_LEFT_RIGHT)
+    builder.addTower(((x + (maze_height - 1)*WALL_LENGTH) + (WALL_LENGTH / 2 + 5)), ((z + (maze_width - 1)*WALL_LENGTH) + (WALL_LENGTH / 2 + 5)), orientation=WALL_ORIENTATION_LEFT_RIGHT)
+
+    for w in range(maze_width):
+        builder.addWall((x - (WALL_LENGTH / 2 + 5)), (z + (w*WALL_LENGTH)), orientation=WALL_ORIENTATION_LEFT_RIGHT)
+        builder.addWall(((x + (maze_height - 1)*WALL_LENGTH) + (WALL_LENGTH / 2 + 5)), (z + (w*WALL_LENGTH)), orientation=WALL_ORIENTATION_LEFT_RIGHT)
+
+    for h in range(maze_height):
+        builder.addWall((x + (h*WALL_LENGTH)), (z - (WALL_LENGTH / 2 + 5)), orientation=WALL_ORIENTATION_UP_DOWN)
+        builder.addWall((x + (h*WALL_LENGTH)), ((z + (maze_width - 1) * WALL_LENGTH) + (WALL_LENGTH / 2 + 5)), orientation=WALL_ORIENTATION_UP_DOWN)
 
     builder.write("CavalryVsInfantryMaze.xml")
 
 
 if __name__ == '__main__':
     print("Building")
-    cavalryVsInfantryMaze(maze_height=6, maze_width=7)
+    init()
+    cavalryVsInfantryMaze(maze_height=10, maze_width=12)
     print("Done.")
