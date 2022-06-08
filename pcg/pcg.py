@@ -102,7 +102,7 @@ class PCG():
             posz = f"{((float(TEAM1_Z) + float(TEAM2_Z)) / 2):.5f}"
 
         self.addBareEntity(TOWER, team, posx, posz, orientation)
-   
+
     def addSquareBoundary(self, posx1, posz1, posx2, posz2):
         # orientations are pre-determined as there is no effective way to calculate them(yet).
         self.addWall(posx1, posz1, "-2.41228")
