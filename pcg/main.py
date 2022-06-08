@@ -1,3 +1,4 @@
+from random import random, randrange
 from city import City
 from pcg import PCG
 from math import radians
@@ -23,15 +24,15 @@ def cavalryVsInfantryF1():
     team2_orientation = "-0.95878"
     builder.addSquareBoundary(x1, z1, x2, z2)
     # team 1 Cavalry
-    builder.addCavalryArcher(float(x1)+2, float(z1)+3, team1_orientation, 1)
-    builder.addCavalryArcher(float(x1)+3, float(z1)+5, team1_orientation, 1)
-    builder.addCavalryArcher(float(x1)+4, float(z1)+7, team1_orientation, 1)
-    builder.addCavalryArcher(float(x1)+5, float(z1)+9, team1_orientation, 1)
+    builder.addCavalryArcher(float(x1)+2, float(z1)+3, team1_orientation)
+    builder.addCavalryArcher(float(x1)+3, float(z1)+5, team1_orientation)
+    builder.addCavalryArcher(float(x1)+4, float(z1)+7, team1_orientation)
+    builder.addCavalryArcher(float(x1)+5, float(z1)+9, team1_orientation)
     # team 2 Infantry
-    builder.addSpearman(float(x2)-2, float(z2)-3, team2_orientation, 1)
-    builder.addSpearman(float(x2)-3, float(z2)-5, team2_orientation, 1)
-    builder.addSpearman(float(x2)-4, float(z2)-7, team2_orientation, 1)
-    builder.addSpearman(float(x2)-5, float(z2)-9, team2_orientation, 1)
+    builder.addSpearman(float(x2)-2, float(z2)-3, team2_orientation)
+    builder.addSpearman(float(x2)-3, float(z2)-5, team2_orientation)
+    builder.addSpearman(float(x2)-4, float(z2)-7, team2_orientation)
+    builder.addSpearman(float(x2)-5, float(z2)-9, team2_orientation)
 
     builder.write("CavalryVsInfantryF1.xml")
 
@@ -46,15 +47,15 @@ def cavalryVsInfantryF2():
     team2_orientation = "-0.95878"
     builder.addSquareBoundaryWithGate(x1, z1, x2, z2)
     # team 1 Cavalry
-    builder.addCavalryArcher(float(x1)+2, float(z1)+3, team1_orientation, 1)
-    builder.addCavalryArcher(float(x1)+3, float(z1)+5, team1_orientation, 1)
-    builder.addCavalryArcher(float(x1)+4, float(z1)+7, team1_orientation, 1)
-    builder.addCavalryArcher(float(x1)+5, float(z1)+9, team1_orientation, 1)
+    builder.addCavalryArcher(float(x1)+2, float(z1)+3, team1_orientation)
+    builder.addCavalryArcher(float(x1)+3, float(z1)+5, team1_orientation)
+    builder.addCavalryArcher(float(x1)+4, float(z1)+7, team1_orientation)
+    builder.addCavalryArcher(float(x1)+5, float(z1)+9, team1_orientation)
     # team 2 Infantry
-    builder.addSpearman(float(x2)-2, float(z2)-3, team2_orientation, 1)
-    builder.addSpearman(float(x2)-3, float(z2)-5, team2_orientation, 1)
-    builder.addSpearman(float(x2)-4, float(z2)-7, team2_orientation, 1)
-    builder.addSpearman(float(x2)-5, float(z2)-9, team2_orientation, 1)
+    builder.addSpearman(float(x2)-2, float(z2)-3, team2_orientation)
+    builder.addSpearman(float(x2)-3, float(z2)-5, team2_orientation)
+    builder.addSpearman(float(x2)-4, float(z2)-7, team2_orientation)
+    builder.addSpearman(float(x2)-5, float(z2)-9, team2_orientation)
 
     builder.write("CavalryVsInfantryF2.xml")
 
@@ -129,10 +130,26 @@ def cavalryVsInfantryDistrict():
     city_generator = City()
     map_height = 2048
     map_width =  2048
+
+    ORIENTATION_0 = radians(0)
+    ORIENTATION_90 = radians(90)
     
     outer_radius = int(map_height / 2) - 100
     inner_radius = int(outer_radius / 3)
     center_coords = np.array([map_height / 2, map_width / 2])
+
+
+    team1_pos_x = randrange(inner_radius, outer_radius)
+    team1_pos_z = randrange(inner_radius, outer_radius)
+
+    team2_pos_x = randrange(inner_radius, outer_radius)
+    team2_pos_z = randrange(inner_radius, outer_radius)
+
+    TEAM1_X = f"{center_coords[0] + team1_pos_x}" 
+    TEAM1_Z = f"{center_coords[1] + team1_pos_z}"
+
+    TEAM2_X = f"{center_coords[0] + team2_pos_x}" 
+    TEAM2_Z = f"{center_coords[1] + team2_pos_z}"
 
     city_generator.generate_circle(builder, inner_radius, center_coords)
     city_generator.generate_circle(builder, outer_radius, center_coords)
@@ -148,6 +165,17 @@ def cavalryVsInfantryDistrict():
     city_generator.generate_district_boundaries(builder, inner_radius, 0, center_coords, district_centers2)
     
     city_generator.generate_structures_in_district_polygon(builder)
+
+    builder.addCavalryArcher(float(TEAM1_X) + 1, float(TEAM1_Z) + 1, ORIENTATION_90)
+    builder.addCavalryArcher(float(TEAM1_X) + 2, float(TEAM1_Z) + 2, ORIENTATION_90)
+    builder.addCavalryArcher(float(TEAM1_X) + 3, float(TEAM1_Z) + 3, ORIENTATION_90)
+    builder.addCavalryArcher(float(TEAM1_X) + 4, float(TEAM1_Z) + 4, ORIENTATION_90)
+
+    builder.addSpearman(float(TEAM2_X) + 1, float(TEAM2_Z) + 1, ORIENTATION_90)
+    builder.addSpearman(float(TEAM2_X) + 2, float(TEAM2_Z) + 2, ORIENTATION_90)
+    builder.addSpearman(float(TEAM2_X) + 3, float(TEAM2_Z) + 3, ORIENTATION_90)
+    builder.addSpearman(float(TEAM2_X) + 4, float(TEAM2_Z) + 4, ORIENTATION_90)
+
 
     builder.write("CavalryVsInfantryDistricts.xml")
 

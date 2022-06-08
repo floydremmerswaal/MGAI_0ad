@@ -10,7 +10,8 @@ from shapely.geometry import Point
 from shapely.geometry.polygon import Polygon
 
 pi = math.pi
-COUNTRIES = ['athen', 'pers', 'kush', 'han', 'rome']
+# filtered countries for which the structures work
+COUNTRIES = ['athen', 'pers', 'kush', 'rome']
 class City:
     def __init__(self) -> None:
         self.SEGMENT_LENGTH = 12.3
@@ -159,7 +160,7 @@ class City:
 
     def generate_structures_in_district_polygon(self, builder):
         polygons = self.generate_polygons_coords_from_voronoi()
-        range = 100
+        range = 20
         step = 5
         for key, value in polygons.items():
             polygon = Polygon(value)
