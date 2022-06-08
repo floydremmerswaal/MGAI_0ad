@@ -6,6 +6,7 @@ from shapely.geometry import Point, GeometryCollection
 from shapely.geometry.multipoint import MultiPoint
 from shapely.geometry.polygon import Polygon, LineString
 from shapely.ops import voronoi_diagram
+from shapely import affinity
 
 import numpy as np
 
@@ -63,12 +64,6 @@ class City():
             self.build_watch_tower(p, rads)
 
     def build_wall_line(self, from_coord, to_coord, max_dist):
-            
-            d1 = np.linalg.norm(np.subtract(from_coord, self.city_center))
-            d2 = np.linalg.norm(np.subtract(to_coord, self.city_center))
-            if math.isclose(d1, max_dist) and math.isclose(d2, max_dist):
-                return
-                
             direction = np.subtract(to_coord, from_coord)
             total_distance = np.linalg.norm(direction)
             n_segments = math.ceil(total_distance / self.SEGMENT_LENGTH)
@@ -91,8 +86,8 @@ class City():
                 
     def generate(self):
         # generate city
-        self.generate_circle(self.radii[1])
-        self.generate_watch_towers_circle(self.radii[1])
+        # self.generate_circle(self.radii[1])
+        # self.generate_watch_towers_circle(self.radii[1])
 
         # Gneerate centers, cities are more dense in the center and thus diff params are used
         centers = self.generate_districts(self.radii[0], self.radii[1], no_districts=10)
@@ -151,13 +146,15 @@ class City():
         # Every split will have no_districts districts
         # Upping the number of splits will make the districts more uniformly distributed
         district_centers = []
+        disc_size = (outer_radius - inner_radius)
         for i in range(splits):
             # calculating coordinates
             for _ in range(no_districts):
                 lower = (i / splits * 2 * math.pi)
                 upper = ((i + 1) / splits * 2 * math.pi)
                 alpha = np.random.uniform(lower, upper)
-                r = (outer_radius - inner_radius) * np.random.rand() + inner_radius
+                # Exclude last 10th of the radius
+                r = (disc_size - (disc_size / 10))  * np.random.rand() + inner_radius
                 x = r * math.cos(alpha) + self.city_center[0]
                 y = r * math.sin(alpha) + self.city_center[1]
                 district_centers.append((x, y))
@@ -167,29 +164,35 @@ class City():
         return district_centers
             
     def generate_random_in_poly(self, number, polygon, max_gen=1000):
+        scaled_poly = affinity.scale(polygon, xfact=0.9, yfact=0.9)
         points: List[Point] = []
         minx, miny, maxx, maxy = polygon.bounds
         count = 0
         while len(points) < number and count < max_gen:
             count += 1
             pnt = Point(np.random.uniform(minx, maxx), np.random.uniform(miny, maxy))
-            if polygon.contains(pnt) and all(not p.buffer(25).contains(pnt) for p in points):
+            if scaled_poly.contains(pnt) and all(not p.buffer(22).contains(pnt) for p in points):
                 points.append(pnt)
         return points
 
     def generate_populate_districts(self, district_polygons):
         district_type_map ={
-            'military': ['arsenal', 'barracks', 'defense_tower', 'range', 'sentry_tower'],
-            'agriculture': ['farmstead', 'field', 'storehouse', 'forge'],
-            'livestock': ['corral', 'stable'],
-            'civil': ['civil_centre', 'fortress', 'gymnasium', 'prytaneion', 'royal_stoa', 'temple', 'theater'],
-            'housing': ['house', 'market'],
+            'military': [['arsenal', 'barracks', 'defense_tower', 'range', 'sentry_tower'], [1,1,1,1,1]],
+            'agriculture': [['farmstead', 'field', 'storehouse', 'forge'], [1,10,1,1]],
+            'livestock': [['corral', 'stable'], [1,1]],
+            'civil': [['civil_centre', 'fortress', 'gymnasium', 'prytaneion', 'royal_stoa', 'temple', 'theater'], [1,1,1,1,1,1,1]],
+            'housing': [['house', 'market'], [1,1]],
         }
         
         for poly in district_polygons:
-            key = np.random.choice(list(district_type_map.keys()))
+            key  = np.random.choice(list(district_type_map.keys()))
+            # normalize odds
+            buildings, odds = district_type_map[key]
+            odds = (np.array(odds) / min(odds)) / sum(odds)
             points = self.generate_random_in_poly(500, poly)
             for p in points:
-                build = np.random.choice(district_type_map[key])
-                self.builder.addBareEntity(entitytype=entities.__dict__.get(f"structures__{self.civilization}__{build}"), team=self.team, posx=p.x, posz=p.y, orientation=np.random.uniform(0, 2 * math.pi))
+                build = np.random.choice(buildings, p=odds)
+                direction = np.subtract([p.x, p.y], self.city_center)
+                rads = math.atan2(direction[0], direction[1]) + (1/2 * math.pi)
+                self.builder.addBareEntity(entitytype=entities.__dict__.get(f"structures__{self.civilization}__{build}"), team=self.team, posx=p.x, posz=p.y, orientation=rads)
         pass
