@@ -2,8 +2,10 @@
 import math
 from typing import List
 from matplotlib import pyplot as plt
-from shapely.geometry import Point
-from shapely.geometry.polygon import Polygon
+from shapely.geometry import Point, GeometryCollection
+from shapely.geometry.multipoint import MultiPoint
+from shapely.geometry.polygon import Polygon, LineString
+from shapely.ops import voronoi_diagram
 
 import numpy as np
 
@@ -62,40 +64,30 @@ class City():
             
             d1 = np.linalg.norm(np.subtract(from_coord, self.city_center))
             d2 = np.linalg.norm(np.subtract(to_coord, self.city_center))
-            if d1 > d2:
-                # swap variables
-                t = from_coord.copy()
-                from_coord = to_coord.copy()
-                to_coord = t
+            if math.isclose(d1, max_dist) and math.isclose(d2, max_dist):
+                return
+            if math.isclose(d1, min_dist) and math.isclose(d2, min_dist):
+                return
                 
             direction = np.subtract(to_coord, from_coord)
             total_distance = np.linalg.norm(direction)
             n_segments = math.ceil(total_distance / self.SEGMENT_LENGTH)
             gate = False
             
-            # buildWatchTower(builder, to_coord, math.atan2(direction[0], direction[1]))
-            far_tower = False
-            close_tower = False
+            self.build_watch_tower(to_coord, math.atan2(direction[0], direction[1]))
+            self.build_watch_tower(from_coord, math.atan2(direction[0], direction[1]))
             # convert direction vector to euler angles
             rads = math.atan2(direction[0], direction[1]) + (1/2 * math.pi)
             
             for i in range(n_segments):
                 offset = direction * (i / float(n_segments))
                 pos = from_coord + offset
-
-                distance = np.linalg.norm(pos - self.city_center)
-                if distance > min_dist and not close_tower and distance < max_dist:
-                    close_tower = True
-                    self.build_watch_tower(pos, rads)
-                if distance < min_dist:
-                    continue
-                if distance > max_dist:
-                    break
                 if n_segments / (i + 1) < 2 and not gate:
                     gate = True
                     self.build_gate(pos, rads)
-                else:
-                    self.build_short_wall(pos, rads)        
+                    continue
+                self.build_short_wall(pos, rads)        
+
                 
     def generate(self):
         # generate city
@@ -111,49 +103,51 @@ class City():
         inner_centers = self.generate_districts(self.radii[0], 0, no_districts=1, no_highways=10)
         self.generate_district_boundaries(self.radii[0], 0, inner_centers)
         
-        self.generate_structures_in_district_polygon(vor, outer_centers)
+        # self.generate_structures_in_district_polygon(vor, outer_centers)
 
-
-    def generate_district_boundaries(self, outer_radius, inner_radius, district_centers):
-        vor = Voronoi(district_centers)
-        fig = voronoi_plot_2d(vor)
+    def plot_voronoi(self, regions):
+        for reg in regions:
+            x,y = reg.exterior.xy
+            plt.plot(x,y)
+            
+        plt.show()
         plt.savefig("voronoi.png")
         
-        # draw a line between all the vertices
-        for (n1,n2), (ridge_from, ridge_to) in vor.ridge_dict.items():
-            if ridge_from == -1:
-            # or (ridge_from in out_of_bounds) or (ridge_to in out_of_bounds):
-                # Do more complicated computation
-                n1_world = vor.points[n1]
-                n2_world = vor.points[n2]
-                
-                ridge_point = vor.vertices[ridge_to]
+        pass
 
-                avg_point = (n1_world + n2_world) / 2
-                avg_direction = avg_point - ridge_point
-                
-                # Rotate the direction in case it is pointing the center 
-                # (we expect infinite points to go outwards)
-                avg_center =np.average(vor.points, axis=0)
-                direction_to_center = avg_center - ridge_point
-                if np.dot(direction_to_center, avg_direction) > 0.0:
-                    avg_direction = -avg_direction
-
-                # calculate the mean of all of the points in points
-                
-                wall_end_point = avg_point
-                while np.linalg.norm(wall_end_point - np.array(self.city_center)) < outer_radius:
-                    wall_end_point += (avg_direction / 100)
-                to_point = wall_end_point
-                self.build_wall_line(ridge_point, to_point, inner_radius, outer_radius)
-                continue
+    def generate_district_boundaries(self, outer_radius, inner_radius, district_centers):
+        vor_regions: GeometryCollection = voronoi_diagram(MultiPoint(district_centers))
+        
+        # Adjust the voronoi regions to be within the outer radius
+        # Create shapely circle
+        regs = []
+        for reg in vor_regions:
+            adjusted_coords = []
             
-            # get points for ridge vertices
-            from_point = vor.vertices[ridge_from]
-            to_point = vor.vertices[ridge_to]
-
-            self.build_wall_line(from_point, to_point, inner_radius, outer_radius)
-        return vor
+            for x, y in reg.boundary.coords:
+                direction = np.subtract([x, y], self.city_center)
+                length = np.linalg.norm(direction)
+                if length > outer_radius:
+                    # clamp to outer radius
+                    normalized_direction = np.divide(direction, length)
+                    new_coord = np.multiply(normalized_direction, outer_radius)
+                    x, y = np.add(self.city_center, new_coord)
+                if length < inner_radius:
+                    # clamp to outer radius
+                    normalized_direction = np.divide(direction, length)
+                    new_coord = np.multiply(normalized_direction, inner_radius)
+                    x, y = np.add(self.city_center, new_coord)
+                adjusted_coords.append((x, y))
+            regs.append(Polygon(adjusted_coords))
+        # self.plot_voronoi(vor_regions)
+        
+        for reg in regs:
+            b = reg.boundary.coords
+            linestrings = [LineString(b[k:k+2]).coords for k in range(len(b) - 1)]
+            for (fromc, toc) in linestrings:
+                self.build_wall_line(np.array(fromc), np.array(toc), inner_radius, outer_radius)
+            
+        return vor_regions
 
     def generate_districts(self, outer_radius, inner_radius, no_districts, no_highways=3):
         district_centers = []
