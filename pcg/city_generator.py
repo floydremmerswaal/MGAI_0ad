@@ -60,13 +60,11 @@ class City():
             
             self.build_watch_tower(p, rads)
 
-    def build_wall_line(self, from_coord, to_coord, min_dist, max_dist):
+    def build_wall_line(self, from_coord, to_coord, max_dist):
             
             d1 = np.linalg.norm(np.subtract(from_coord, self.city_center))
             d2 = np.linalg.norm(np.subtract(to_coord, self.city_center))
             if math.isclose(d1, max_dist) and math.isclose(d2, max_dist):
-                return
-            if math.isclose(d1, min_dist) and math.isclose(d2, min_dist):
                 return
                 
             direction = np.subtract(to_coord, from_coord)
@@ -91,17 +89,16 @@ class City():
                 
     def generate(self):
         # generate city
-        self.generate_circle(self.radii[0])
         self.generate_circle(self.radii[1])
         self.generate_watch_towers_circle(self.radii[1])
 
         # outer city
-        outer_centers = self.generate_districts(self.radii[1], self.radii[0], no_districts=10)
-        vor = self.generate_district_boundaries(self.radii[1], self.radii[0], outer_centers)
+        centers = self.generate_districts(self.radii[0], self.radii[1], no_districts=10)
+        inner_centers = self.generate_districts(0, self.radii[0], no_districts=1, splits=20)
+        centers.extend(inner_centers)
         
+        vor = self.generate_district_boundaries(self.radii[1], centers)
         # inner city
-        inner_centers = self.generate_districts(self.radii[0], 0, no_districts=1, no_highways=10)
-        self.generate_district_boundaries(self.radii[0], 0, inner_centers)
         
         # self.generate_structures_in_district_polygon(vor, outer_centers)
 
@@ -115,7 +112,7 @@ class City():
         
         pass
 
-    def generate_district_boundaries(self, outer_radius, inner_radius, district_centers):
+    def generate_district_boundaries(self, outer_radius, district_centers):
         vor_regions: GeometryCollection = voronoi_diagram(MultiPoint(district_centers))
         
         # Adjust the voronoi regions to be within the outer radius
@@ -132,30 +129,31 @@ class City():
                     normalized_direction = np.divide(direction, length)
                     new_coord = np.multiply(normalized_direction, outer_radius)
                     x, y = np.add(self.city_center, new_coord)
-                if length < inner_radius:
-                    # clamp to outer radius
-                    normalized_direction = np.divide(direction, length)
-                    new_coord = np.multiply(normalized_direction, inner_radius)
-                    x, y = np.add(self.city_center, new_coord)
                 adjusted_coords.append((x, y))
             regs.append(Polygon(adjusted_coords))
         # self.plot_voronoi(vor_regions)
         
+        done = []
         for reg in regs:
             b = reg.boundary.coords
             linestrings = [LineString(b[k:k+2]).coords for k in range(len(b) - 1)]
             for (fromc, toc) in linestrings:
-                self.build_wall_line(np.array(fromc), np.array(toc), inner_radius, outer_radius)
+                if (fromc, toc) not in done and (toc, fromc) not in done:
+                    self.build_wall_line(np.array(fromc), np.array(toc), outer_radius)
+                    done.append((fromc, toc))
             
         return vor_regions
 
-    def generate_districts(self, outer_radius, inner_radius, no_districts, no_highways=3):
+    def generate_districts(self, inner_radius, outer_radius, no_districts, splits=3):
+        # Number of splits determines the amount of splits the circle is divided into
+        # Every split will have no_districts districts
+        # Upping the number of splits will make the districts more uniformly distributed
         district_centers = []
-        for i in range(no_highways):
+        for i in range(splits):
             # calculating coordinates
             for _ in range(no_districts):
-                lower = (i / no_highways * 2 * math.pi)
-                upper = ((i + 1) / no_highways * 2 * math.pi)
+                lower = (i / splits * 2 * math.pi)
+                upper = ((i + 1) / splits * 2 * math.pi)
                 alpha = np.random.uniform(lower, upper)
                 r = (outer_radius - inner_radius) * np.random.rand() + inner_radius
                 x = r * math.cos(alpha) + self.city_center[0]
