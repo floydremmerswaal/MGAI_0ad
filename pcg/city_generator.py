@@ -15,23 +15,25 @@ from scipy.spatial import Voronoi, voronoi_plot_2d
 
 class City():
     # Radii = plural of radius.
-    def __init__(self, builder: PCG, city_center, radii: List):
+    def __init__(self, builder: PCG, city_center, radii: List, civilization, team):
         self.SEGMENT_LENGTH = 12.3
         self.builder = builder
         self.city_center = city_center
         self.radii = radii
+        self.civilization = civilization
+        self.team = team
     
     def points_in_circum(self, r, n=100):
         return [(math.cos(2*np.pi/n*x)*r,math.sin(2*np.pi/n*x)*r) for x in range(0,n+1)]
 
     def build_short_wall(self, coord, orientation):
-        self.builder.addBareEntity(entitytype=entities.skirmish__structures__default_wall_short, team=0, posx=coord[0], posz=coord[1], orientation=orientation)
+        self.builder.addBareEntity(entitytype=entities.__dict__.get(f"structures__{self.civilization}__wall_short"), team=self.team, posx=coord[0], posz=coord[1], orientation=orientation)
         
     def build_gate(self, coord, orientation):
-        self.builder.addBareEntity(entitytype=entities.skirmish__structures__default_wall_gate, team=0, posx=coord[0], posz=coord[1], orientation=orientation)
+        self.builder.addBareEntity(entitytype=entities.__dict__.get(f"structures__{self.civilization}__wall_gate"), team=self.team, posx=coord[0], posz=coord[1], orientation=orientation)
 
     def build_watch_tower(self, coord, orientation):
-        self.builder.addBareEntity(entitytype=entities.skirmish__structures__default_wall_tower, team=0, posx=coord[0], posz=coord[1], orientation=orientation)
+        self.builder.addBareEntity(entitytype=entities.__dict__.get(f"structures__{self.civilization}__wall_tower"), team=self.team, posx=coord[0], posz=coord[1], orientation=orientation)
 
     def generate_circle(self, radius):
         # compute circumference of circle with radius
@@ -92,15 +94,16 @@ class City():
         self.generate_circle(self.radii[1])
         self.generate_watch_towers_circle(self.radii[1])
 
-        # outer city
+        # Gneerate centers, cities are more dense in the center and thus diff params are used
         centers = self.generate_districts(self.radii[0], self.radii[1], no_districts=10)
         inner_centers = self.generate_districts(0, self.radii[0], no_districts=1, splits=20)
         centers.extend(inner_centers)
         
-        vor = self.generate_district_boundaries(self.radii[1], centers)
-        # inner city
+        # Generate single voronoi
+        regions = self.generate_district_boundaries(self.radii[1], centers)
+
+        self.generate_populate_districts(regions)
         
-        # self.generate_structures_in_district_polygon(vor, outer_centers)
 
     def plot_voronoi(self, regions):
         for reg in regions:
@@ -131,7 +134,6 @@ class City():
                     x, y = np.add(self.city_center, new_coord)
                 adjusted_coords.append((x, y))
             regs.append(Polygon(adjusted_coords))
-        # self.plot_voronoi(vor_regions)
         
         done = []
         for reg in regs:
@@ -142,7 +144,7 @@ class City():
                     self.build_wall_line(np.array(fromc), np.array(toc), outer_radius)
                     done.append((fromc, toc))
             
-        return vor_regions
+        return regs
 
     def generate_districts(self, inner_radius, outer_radius, no_districts, splits=3):
         # Number of splits determines the amount of splits the circle is divided into
@@ -161,44 +163,33 @@ class City():
                 district_centers.append((x, y))
 
         for district in district_centers:
-            self.builder.addBareEntity(entitytype=entities.structures__maur__tower_double, team=0, posx=district[0], posz=district[1], orientation=2.35621)
+            self.builder.addBareEntity(entitytype=entities.structures__maur__tower_double, team=self.team, posx=district[0], posz=district[1], orientation=2.35621)
         return district_centers
             
-    # get polygon coordinates from the voronoi regions
-    def generate_polygons_coords_from_voronoi(self, vor):
-        polygons = {}
-        for id, region_index in enumerate(vor.point_region):
-            if -1 in vor.regions[region_index]:
-                continue
+    def generate_random_in_poly(self, number, polygon, max_gen=1000):
+        points: List[Point] = []
+        minx, miny, maxx, maxy = polygon.bounds
+        count = 0
+        while len(points) < number and count < max_gen:
+            count += 1
+            pnt = Point(np.random.uniform(minx, maxx), np.random.uniform(miny, maxy))
+            if polygon.contains(pnt) and all(not p.buffer(25).contains(pnt) for p in points):
+                points.append(pnt)
+        return points
 
-            points = []
-            for vertex_index in vor.regions[region_index]:
-                points.append(tuple(vor.vertices[vertex_index]))
-            points.append(points[0])
-            polygons[id] = Polygon(points)
-        return polygons
-
-    def generate_structures_in_district_polygon(self, vor, district_centers):
-        polygons = self.generate_polygons_coords_from_voronoi(vor)
-        range = 20
-        step = 5
+    def generate_populate_districts(self, district_polygons):
+        district_type_map ={
+            'military': ['arsenal', 'barracks', 'defense_tower', 'range', 'sentry_tower'],
+            'agriculture': ['farmstead', 'field', 'storehouse', 'forge'],
+            'livestock': ['corral', 'stable'],
+            'civil': ['civil_centre', 'fortress', 'gymnasium', 'prytaneion', 'royal_stoa', 'temple', 'theater'],
+            'housing': ['house', 'market'],
+        }
         
-        for key, polygon in polygons.items():
-            district = district_centers[key]
-            occupied_coords = []
-            country = np.random.choice(['spart'])
-            # print("checking new polygon", key) 
-            rand_offset_count = 0
-            struct_candidates = [item for item in dir(entities) if item.startswith("structures__" + country) and not "wall" in item]
-            while len(occupied_coords) < 6: # until atleast 6 structures are built
-                rand_offset = np.random.uniform(-20, 20)
-                #hacky, if no random placement coord are found in the polygon after a certain values skip rest of the polygon
-                if rand_offset_count == (2 * range / step): 
-                    break
-                placement_coord = (district[0] + rand_offset, district[1] + rand_offset)
-                if polygon.contains(Point(placement_coord)) and not placement_coord in occupied_coords:
-                    # print("adding structures at", placement_coord)
-                    rand_structure = np.random.choice(struct_candidates)
-                    self.builder.addBareEntity(entities.__dict__.get(rand_structure), team=0, posx=placement_coord[0], posz=placement_coord[1], orientation=2.35621)
-                    occupied_coords.append(placement_coord)
-                rand_offset_count += 1 
+        for poly in district_polygons:
+            key = np.random.choice(list(district_type_map.keys()))
+            points = self.generate_random_in_poly(500, poly)
+            for p in points:
+                build = np.random.choice(district_type_map[key])
+                self.builder.addBareEntity(entitytype=entities.__dict__.get(f"structures__{self.civilization}__{build}"), team=self.team, posx=p.x, posz=p.y, orientation=np.random.uniform(0, 2 * math.pi))
+        pass

@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 from city_generator import City
 
 if __name__ == '__main__':
+    civs =['athen', 'brit', 'cart','gaul', 'iber', 'kush', 'mace','maur', 'pers', 'ptol', 'rome', 'sele', 'spart']
     print("Building")
     map_height = 2048
     map_width =  2048
@@ -20,8 +21,10 @@ if __name__ == '__main__':
     center_coords = np.array([map_height / 2, map_width / 2])
     
     builder = PCG()
-        
-    city = City(builder, center_coords, [inner_radius, outer_radius])
+    
+    civ = np.random.choice(civs)
+    print('Picked civ:', civ)
+    city = City(builder, center_coords, [inner_radius, outer_radius], civ, 0)
     city.generate()
     
     builder.write("CavalryVsInfantryDistricts.xml")
