@@ -7,6 +7,7 @@ import entities
 CAVARCHER = entities.units__pers__cavalry_archer_a
 SPEARMAN = entities.units__pers__infantry_spearman_a
 WALL = entities.structures__athen__wall_long
+TOWER = entities.structures__athen__wall_tower
 GATE = entities.structures__athen__wall_gate
 
 # the 'original' but by all means use different values if you want to
@@ -93,6 +94,15 @@ class PCG():
 
         self.addBareEntity(WALL, team, posx, posz, orientation)
 
+    def addTower(self, posx = None, posz = None, orientation = ORIENTATION, team = 0):
+
+        if posx is None:
+            posx = f"{((float(TEAM1_X) + float(TEAM2_X)) / 2):.5f}"
+        if posz is None:
+            posz = f"{((float(TEAM1_Z) + float(TEAM2_Z)) / 2):.5f}"
+
+        self.addBareEntity(TOWER, team, posx, posz, orientation)
+        
     def addSquareBoundary(self, posx1, posz1, posx2, posz2):
         # orientations are pre-determined as there is no effective way to calculate them(yet).
         self.addWall(posx1, posz1, "-2.41228")
