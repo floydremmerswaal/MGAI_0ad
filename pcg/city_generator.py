@@ -69,8 +69,9 @@ class City():
                 to_coord = t
                 
             direction = np.subtract(to_coord, from_coord)
-            distance = np.linalg.norm(direction)
-            n_segments = math.ceil(distance / self.SEGMENT_LENGTH)
+            total_distance = np.linalg.norm(direction)
+            n_segments = math.ceil(total_distance / self.SEGMENT_LENGTH)
+            gate = False
             
             # buildWatchTower(builder, to_coord, math.atan2(direction[0], direction[1]))
             far_tower = False
@@ -90,7 +91,11 @@ class City():
                     continue
                 if distance > max_dist:
                     break
-                self.build_short_wall(pos, rads)        
+                if n_segments / (i + 1) < 2 and not gate:
+                    gate = True
+                    self.build_gate(pos, rads)
+                else:
+                    self.build_short_wall(pos, rads)        
                 
     def generate(self):
         # generate city
