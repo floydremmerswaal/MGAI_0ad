@@ -147,14 +147,15 @@ def cavalryVsInfantryDistrict():
 
     city_generator.generate_district_boundaries(builder, inner_radius, 0, center_coords, district_centers2)
     
+    city_generator.generate_structures_in_district_polygon(builder)
+
     builder.write("CavalryVsInfantryDistricts.xml")
 
 if __name__ == '__main__':
     print("Building scenarios...")
-    init()
     # cavalryVsInfantry()
     # cavalryVsInfantryF1()
     # cavalryVsInfantryF2()
-    cavalryVsInfantryMaze(maze_height=10, maze_width=12)
-    # cavalryVsInfantryDistrict()
+    # cavalryVsInfantryMaze(maze_height=10, maze_width=12)
+    cavalryVsInfantryDistrict()
     print("Done.")
