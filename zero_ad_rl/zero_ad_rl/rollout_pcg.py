@@ -14,6 +14,7 @@ import zipfile
 import shutil
 import glob
 
+
 def update_env_map(env: str, pcg: bool, setup: bool = False):
     if sys.platform == 'win32':
         path = os.path.join(pathlib.Path.home(), "Documents", "My Games", "0ad", "mods", "user", "maps", "scenarios")
