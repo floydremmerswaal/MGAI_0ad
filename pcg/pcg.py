@@ -1,6 +1,6 @@
 import random
 
-import entities
+from pcg import entities
 
 # some constants
 #TODO : randomly choose entities and structures, some units are not working though

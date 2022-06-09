@@ -1,20 +1,20 @@
-from random import random, randrange
-from city import City
-from pcg import PCG
-from math import radians
-from maze import Maze
+from pcg.city_generator import City
+from pcg.pcg import PCG
+from pcg.maze import Maze
 import numpy as np
+from math import radians
+from random import random, randrange
 
-# separated by wall
-def cavalryVsInfantry():
+
+def cavalryVsInfantry(filename: str = "CavalryvsSpearman.xml"): # separated by wall
     builder = PCG()
     builder.addCavalryArcher()
     builder.addSpearman()
     builder.addWall()
-    builder.write("CavalryvsSpearman.xml")
+    builder.write(filename)
 
-# surrounded by a fort
-def cavalryVsInfantryF1():
+
+def cavalryVsInfantryF1(filename: str = "CavalryVsInfantryF1.xml"): # surrounded by a fort
     builder = PCG()
     x1 = "483.3144"
     z1 = "116.94448"
@@ -34,10 +34,10 @@ def cavalryVsInfantryF1():
     builder.addSpearman(float(x2)-4, float(z2)-7, team2_orientation)
     builder.addSpearman(float(x2)-5, float(z2)-9, team2_orientation)
 
-    builder.write("CavalryVsInfantryF1.xml")
+    builder.write(filename)
 
-# surrounded by a fort with a gate
-def cavalryVsInfantryF2():
+
+def cavalryVsInfantryF2(filename: str = "CavalryVsInfantryF2.xml"): # surrounded by a fort with a gate
     builder = PCG()
     x1 = "483.3144"
     z1 = "116.94448"
@@ -57,10 +57,10 @@ def cavalryVsInfantryF2():
     builder.addSpearman(float(x2)-4, float(z2)-7, team2_orientation)
     builder.addSpearman(float(x2)-5, float(z2)-9, team2_orientation)
 
-    builder.write("CavalryVsInfantryF2.xml")
+    builder.write(filename)
 
 
-def cavalryVsInfantryMaze(maze_height, maze_width):
+def cavalryVsInfantryMaze(maze_height=10, maze_width=10, filename: str ="CavalryVsInfantryMaze.xml"):
     builder = PCG()
 
     WALL_LENGTH = 30
@@ -123,61 +123,23 @@ def cavalryVsInfantryMaze(maze_height, maze_width):
         builder.addWall((x + (h*WALL_LENGTH)), (z - (WALL_LENGTH / 2 + 5)), orientation=WALL_ORIENTATION_UP_DOWN)
         builder.addWall((x + (h*WALL_LENGTH)), ((z + (maze_width - 1) * WALL_LENGTH) + (WALL_LENGTH / 2 + 5)), orientation=WALL_ORIENTATION_UP_DOWN)
 
-    builder.write("CavalryVsInfantryMaze.xml")
+    builder.write(filename)
 
-def cavalryVsInfantryDistrict():
-    builder = PCG()
-    city_generator = City()
+
+def cavalryVsInfantryCity(filename: str = "CavalryVsInfantryCity.xml"):
     map_height = 2048
     map_width =  2048
-
-    ORIENTATION_0 = radians(0)
-    ORIENTATION_90 = radians(90)
     
     outer_radius = int(map_height / 2) - 100
     inner_radius = int(outer_radius / 3)
     center_coords = np.array([map_height / 2, map_width / 2])
-
-
-    team1_pos_x = randrange(inner_radius, outer_radius)
-    team1_pos_z = randrange(inner_radius, outer_radius)
-
-    team2_pos_x = randrange(inner_radius, outer_radius)
-    team2_pos_z = randrange(inner_radius, outer_radius)
-
-    TEAM1_X = f"{center_coords[0] + team1_pos_x}" 
-    TEAM1_Z = f"{center_coords[1] + team1_pos_z}"
-
-    TEAM2_X = f"{center_coords[0] + team2_pos_x}" 
-    TEAM2_Z = f"{center_coords[1] + team2_pos_z}"
-
-    city_generator.generate_circle(builder, inner_radius, center_coords)
-    city_generator.generate_circle(builder, outer_radius, center_coords)
-    city_generator.generate_watch_towers_circle(builder, outer_radius, center_coords)
-
-    no_districts = 10
-    district_centers = city_generator.generate_districts(builder, outer_radius, inner_radius, center_coords, no_districts)
-
-    city_generator.generate_district_boundaries(builder, outer_radius, inner_radius, center_coords, district_centers)
     
-    district_centers2 = city_generator.generate_districts(builder, inner_radius, 0, center_coords, no_districts=1, no_highways=10)
-
-    city_generator.generate_district_boundaries(builder, inner_radius, 0, center_coords, district_centers2)
+    builder = PCG()
+    city = City(builder, center_coords, [inner_radius, outer_radius], 'athen', 0)
+    city.generate()
     
-    city_generator.generate_structures_in_district_polygon(builder)
+    builder.write(filename)
 
-    builder.addCavalryArcher(float(TEAM1_X) + 1, float(TEAM1_Z) + 1, ORIENTATION_90)
-    builder.addCavalryArcher(float(TEAM1_X) + 2, float(TEAM1_Z) + 2, ORIENTATION_90)
-    builder.addCavalryArcher(float(TEAM1_X) + 3, float(TEAM1_Z) + 3, ORIENTATION_90)
-    builder.addCavalryArcher(float(TEAM1_X) + 4, float(TEAM1_Z) + 4, ORIENTATION_90)
-
-    builder.addSpearman(float(TEAM2_X) + 1, float(TEAM2_Z) + 1, ORIENTATION_90)
-    builder.addSpearman(float(TEAM2_X) + 2, float(TEAM2_Z) + 2, ORIENTATION_90)
-    builder.addSpearman(float(TEAM2_X) + 3, float(TEAM2_Z) + 3, ORIENTATION_90)
-    builder.addSpearman(float(TEAM2_X) + 4, float(TEAM2_Z) + 4, ORIENTATION_90)
-
-
-    builder.write("CavalryVsInfantryDistricts.xml")
 
 if __name__ == '__main__':
     print("Building scenarios...")
@@ -185,5 +147,5 @@ if __name__ == '__main__':
     # cavalryVsInfantryF1()
     # cavalryVsInfantryF2()
     # cavalryVsInfantryMaze(maze_height=10, maze_width=12)
-    cavalryVsInfantryDistrict()
+    # cavalryVsInfantryCity()
     print("Done.")

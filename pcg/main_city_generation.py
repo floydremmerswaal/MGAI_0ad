@@ -1,7 +1,7 @@
 import numpy as np
 from pyrsistent import v
 from scipy import rand
-from pcg import PCG, entities
+from pcg.pcg import PCG, entities
 import math
 import random
 from scipy.spatial import Voronoi, voronoi_plot_2d
