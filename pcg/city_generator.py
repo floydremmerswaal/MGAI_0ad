@@ -184,11 +184,19 @@ class City():
             'housing': [['house', 'market'], [1,1]],
         }
         
+        # create probabilities for each district based on how close they are to the center
+        outer_preference = [0.2, 1, 1, 0.01, 0.5]
+        inner_preference = [1, 0.01, 0.01, 1, 0.5]
         for poly in district_polygons:
-            key  = np.random.choice(list(district_type_map.keys()))
+            # the closer the polygon is to the center, the more likely it is to have type civil and housing
+            distance = np.linalg.norm(np.subtract(poly.centroid.coords[0], self.city_center)) / self.radii[1]
+            # use this to weight the types
+            type_odds = [inner_preference[i] * (1 - distance) + (outer_preference[i] * distance) for i in range(len(inner_preference))]
+            type_odds = type_odds / np.sum(type_odds)
+            key  = np.random.choice(list(district_type_map.keys()), p=type_odds)
             # normalize odds
             buildings, odds = district_type_map[key]
-            odds = (np.array(odds) / min(odds)) / sum(odds)
+            odds = odds / np.sum(odds)
             points = self.generate_random_in_poly(500, poly)
             for p in points:
                 build = np.random.choice(buildings, p=odds)
