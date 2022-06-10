@@ -7,5 +7,5 @@ def register_envs():
     register_env('SimpleMinimapCavVsInf', lambda c: SimpleMinimapCavVsInfEnv(c))
     register_env('MinimapCavVsInf', lambda c: MinimapCavVsInfEnv(c))
     register_env('CavalryVsInfantryMaze', lambda c: CavalryVsInfantryMazeEnv(c))
-    register_env('CavalryVsInfantryCity', lambda c: CavalryVsInfantryMazeEnv(c))
+    register_env('CavalryVsInfantryCity', lambda c: CavalryVsInfantryCityEnv(c))
 
