@@ -103,16 +103,15 @@ class City():
         #add troops on each team
         circum_points = self.points_in_circum(8, 3)
         district_center_team1 = random.choice(inner_centers)
-        for p in circum_points:
-            direction = np.subtract(p, district_center_team1)
-            rads = math.atan2(direction[0], direction[1])
-            self.builder.addCavalryArcher(p[0]+district_center_team1[0], p[1]+district_center_team1[1], rads)
-
         district_center_team2 = random.choice(inner_centers)
         for p in circum_points:
-            direction = np.subtract(p, district_center_team2)
-            rads = math.atan2(direction[0], direction[1])
-            self.builder.addSpearman(p[0]+district_center_team2[0], p[1]+district_center_team2[1], rads)
+            direction_team1 = np.subtract(p, district_center_team1)
+            rads_team1 = math.atan2(direction_team1[0], direction_team1[1])
+            direction_team2 = np.subtract(p, district_center_team2)
+            rads_team2 = math.atan2(direction_team2[0], direction_team2[1])
+            self.builder.addCavalryArcher(p[0]+district_center_team1[0], p[1]+district_center_team1[1], rads_team1)
+            self.builder.addSpearman(p[0]+district_center_team2[0], p[1]+district_center_team2[1], rads_team2)
+            
 
     def plot_voronoi(self, regions):
         for reg in regions:
