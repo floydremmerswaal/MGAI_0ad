@@ -1,6 +1,4 @@
 import random as rnd
-from colorama import init
-from colorama import Fore, Back, Style
 
 class Maze:
     def __init__(self, height=10, width=10):
@@ -21,13 +19,13 @@ class Maze:
         for i in range(0, self.height):
             for j in range(0, self.width):
                 if (self.maze[i][j] == self.unvisited):
-                    print(Fore.WHITE + str(self.maze[i][j]), end=" ")
+                    print(str(self.maze[i][j]), end=" ")
                 elif (self.maze[i][j] == self.cell):
-                    print(Fore.GREEN + str(self.maze[i][j]), end=" ")
+                    print(str(self.maze[i][j]), end=" ")
                 elif (self.maze[i][j] == self.exit):
-                    print(Fore.BLUE + str(self.maze[i][j]), end=" ")
+                    print(str(self.maze[i][j]), end=" ")
                 else:
-                    print(Fore.RED + str(self.maze[i][j]), end=" ")
+                    print(str(self.maze[i][j]), end=" ")
             print('\n')
 
     def surrounding_cells(self, rnd_wall):
@@ -213,7 +211,6 @@ class Maze:
 
 
 if __name__ == '__main__':
-    init()
     maze = Maze(10, 10)
     maze.generate()
     maze.print_maze()
