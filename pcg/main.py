@@ -127,6 +127,9 @@ def cavalryVsInfantryMaze(maze_height=10, maze_width=10, filename: str ="Cavalry
 
 
 def cavalryVsInfantryCity(filename: str = "CavalryVsInfantryCity.xml"):
+    civs =['athen', 'brit', 'cart','gaul', 'iber', 'kush', 'mace','maur', 'pers', 'ptol', 'rome', 'sele', 'spart']
+    # civ = np.random.choice(civs)
+    civ = 'athen'
     map_height = 2048
     map_width =  2048
     
@@ -135,11 +138,11 @@ def cavalryVsInfantryCity(filename: str = "CavalryVsInfantryCity.xml"):
     center_coords = np.array([map_height / 2, map_width / 2])
     
     builder = PCG()
-    city = City(builder, center_coords, [inner_radius, outer_radius], 'athen', 0)
+    city = City(builder, center_coords, [inner_radius, outer_radius], civ, 0)
     city.generate()
     
     builder.write(filename)
-
+    
 
 if __name__ == '__main__':
     print("Building scenarios...")

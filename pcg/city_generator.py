@@ -1,5 +1,6 @@
 
 import math
+import random
 from typing import List
 from matplotlib import pyplot as plt
 from shapely.geometry import Point, GeometryCollection
@@ -12,7 +13,6 @@ import numpy as np
 
 from pcg import entities
 from pcg import PCG
-from scipy.spatial import Voronoi, voronoi_plot_2d
 
 class City():
     # Radii = plural of radius.
@@ -98,17 +98,27 @@ class City():
         regions = self.generate_district_boundaries(self.radii[1], centers)
 
         self.generate_populate_districts(regions)
-        
+
+        #add troops on each team
+        circum_points = self.points_in_circum(8, 3)
+        district_center_team1 = random.choice(inner_centers)
+        district_center_team2 = random.choice(inner_centers)
+        for p in circum_points:
+            direction_team1 = np.subtract(p, district_center_team1)
+            rads_team1 = math.atan2(direction_team1[0], direction_team1[1])
+            direction_team2 = np.subtract(p, district_center_team2)
+            rads_team2 = math.atan2(direction_team2[0], direction_team2[1])
+            self.builder.addCavalryArcher(p[0]+district_center_team1[0], p[1]+district_center_team1[1], rads_team1)
+            self.builder.addSpearman(p[0]+district_center_team2[0], p[1]+district_center_team2[1], rads_team2)
+            
 
     def plot_voronoi(self, regions):
         for reg in regions:
             x,y = reg.exterior.xy
             plt.plot(x,y)
-            
-        plt.show()
-        plt.savefig("voronoi.png")
-        
-        pass
+
+        plt.gca().set_aspect('equal', adjustable='box')
+        plt.savefig("voronoi.pdf",  bbox_inches='tight')
 
     def generate_district_boundaries(self, outer_radius, district_centers):
         vor_regions: GeometryCollection = voronoi_diagram(MultiPoint(district_centers))
