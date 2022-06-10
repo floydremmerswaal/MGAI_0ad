@@ -1,3 +1,4 @@
-from pcg.pcg import *
-from pcg.entities import *
-from pcg.maze import *
+from .pcg import *
+from .maze import *
+from .city_generator import *
+from .entities import *
