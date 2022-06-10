@@ -12,7 +12,6 @@ import numpy as np
 
 from pcg import entities
 from pcg import PCG
-from scipy.spatial import Voronoi, voronoi_plot_2d
 
 class City():
     # Radii = plural of radius.
@@ -104,11 +103,9 @@ class City():
         for reg in regions:
             x,y = reg.exterior.xy
             plt.plot(x,y)
-            
-        plt.show()
-        plt.savefig("voronoi.png")
-        
-        pass
+
+        plt.gca().set_aspect('equal', adjustable='box')
+        plt.savefig("voronoi.pdf",  bbox_inches='tight')
 
     def generate_district_boundaries(self, outer_radius, district_centers):
         vor_regions: GeometryCollection = voronoi_diagram(MultiPoint(district_centers))
