@@ -1,6 +1,6 @@
 # Modern Game AI Algorithms Project: PCG and Kiting in 0 A.D.
 
-In order to run the project, you will need to install version 0.23 of 0 A.D., available [here](https://releases.wildfiregames.com/).
+In order to run the project, you will need to install version 0.24 of 0 A.D., available [here](https://releases.wildfiregames.com/).
 
 You can add pyrogenesis to your environment variables for easier use, otherwise always specify the path to the execution file. 
 <br>
