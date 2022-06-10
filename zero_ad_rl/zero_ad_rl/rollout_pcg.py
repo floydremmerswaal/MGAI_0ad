@@ -71,4 +71,6 @@ if __name__ == '__main__':
         update_env_map(args.env, args.pcg, args.pmp_setup)
 
     register_envs()
-    # run(args, parser)
+
+    if not args.pmp_setup:
+        run(args, parser)
